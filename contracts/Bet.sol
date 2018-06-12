@@ -44,9 +44,9 @@ contract Bet {
 
     constructor() public payable{}
 
-    function bet(uint _quotation, bool _victory, bool _defeat, bool _equality, string match_id, string _team) payable external {
+    function bet(uint _quotation, bool _victory, bool _equality, string match_id, string _team) payable external {
         addressToBet[msg.sender] = 
-            Betting(msg.sender, msg.value, _quotation, _victory, _defeat, _equality, match_id, _team);
+            Betting(msg.sender, msg.value, _quotation, _victory, _equality, match_id, _team);
         
 
         addressToHistory[msg.sender].push(addressToBet[msg.sender]);
@@ -54,8 +54,8 @@ contract Bet {
 
     function resolveBet() external {
         Betting memory currentBet = addressToBet[msg.sender];
-        Match memory matchBet = idToMatch[currentBet.match_id];
-        string resultMatch = matchBet.victory ? matchBet.team : 'test';
+        // Match memory matchBet = idToMatch[currentBet.match_id];
+        // string resultMatch = matchBet.victory ? matchBet.team : 'test';
         require(msg.sender == currentBet.bettor);
         uint gain = (currentBet.amount * currentBet.quotation);
         msg.sender.transfer(gain);
