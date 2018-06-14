@@ -4,7 +4,7 @@ import { Radio, Button } from 'antd';
 import Web3 from 'web3';
 import 'antd/dist/antd.css';
 import './App.css';
-
+import betContract from './truffle-build/contracts/Bet.json';
 const RadioButton = Radio.Button;
 const RadioGroup = Radio.Group;
 
@@ -26,11 +26,13 @@ class App extends Component {
       console.log("No web3 detected. Falling back to http://localhost:8545. You should remove this fallback when you deploy live, as it's inherently insecure. Consider switching to Metamask for development. More info here: http://truffleframework.com/tutorials/truffle-and-metamask");
       this.web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545")) // eslint-disable-line no-undef
    }
+   const betAbi = betContract.abi;
+   // TODO : ne fonctionne que si on fait un lien symbolique truffle-build dans src vers le répertoire de build de truffle
+   // ln -s ../build truffle-build
+   const MyContract = window.web3.eth.contract(betAbi);
 
-   const MyContract = window.web3.eth.contract([{"constant":false,"inputs":[{"name":"_quotation","type":"uint256"},{"name":"_victory","type":"bool"},{"name":"_defeat","type":"bool"},{"name":"_equality","type":"bool"},{"name":"_team","type":"string"}],"name":"bet","outputs":[],"payable":true,"stateMutability":"payable","type":"function"},{"constant":false,"inputs":[],"name":"resolveBet","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"anonymous":false,"inputs":[{"indexed":false,"name":"bettor","type":"address"},{"indexed":false,"name":"gain","type":"uint256"}],"name":"ResolvedBet","type":"event"}]);
 
-
-   this.state.ContractInstance = MyContract.at("0xf978c3426f5ffb32c3ae0de477ca349abd2ab51f")
+   this.state.ContractInstance = MyContract.at("0x00d34A6611cC7ffF292734880C020cb88a341b1B")
    this.state.ResolvedBet = this.state.ContractInstance.ResolvedBet()
    this.state.ResolvedBet.watch((error, result) => {
      console.log(error, result)
