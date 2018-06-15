@@ -16,10 +16,51 @@
 
 .App-title {
   font-size: 1.5em;
+  color: white;
 }
 
 .App-intro {
   font-size: large;
+  width: 50%;
+  padding: 20px 10px;
+  border: 2px solid black;
+}
+
+#content{
+  display: flex;
+  flex-direction: row;
+}
+#next-matches{
+  width: 25%;
+  border: 2px solid black;
+}
+
+#event-logs{
+  border: 2px solid black;
+}
+
+#my-bets{
+  width: 25%;
+  border: 2px solid black;
+}
+
+#account-sumup{
+  display: flex;
+  flex-direction: row;
+  text-align: left;
+  margin-top: 30px;
+  border: 2px double white;
+  padding: 10px;
+}
+
+#account-sumup p{
+  margin:auto 0px auto 30px;
+  vertical-align: middle;
+}
+
+#account-sumup h2{
+  color:white;
+  margin:auto;
 }
 
 @keyframes App-logo-spin {

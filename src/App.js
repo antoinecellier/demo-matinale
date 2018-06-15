@@ -10,7 +10,7 @@ const RadioGroup = Radio.Group;
 
 class App extends Component {
   
-
+  
   constructor(props) {
     super(props);
     this.state = {bet: undefined, amount: null };
@@ -18,7 +18,9 @@ class App extends Component {
     this.onChangeAmount = this.onChangeAmount.bind(this);
     this.toBet = this.toBet.bind(this);
     this.play = this.play.bind(this);
-
+    this.matchs = [{home:'France', guest: 'Russia', homeQuote: 3, guestQuote: 1.5}, {home:'Italy', guest: 'Danemark', homeQuote: 2, guestQuote: 2}];
+    this.bets = [{match: 'France-Russia', date: new Date() , montant: 10}];
+    this.eventsLog = [];
     if(typeof window.web3 != 'undefined'){
       console.log("Using web3 detected from external source like Metamask")
       this.web3 = new Web3(window.web3.currentProvider) // eslint-disable-line no-undef
@@ -73,25 +75,42 @@ class App extends Component {
       <div className="App">
         <header className="App-header">
           <h1 className="App-title">Paris sportif à travers la blockchain</h1>
-        </header>
-        <div className="App-intro">
-          <br /><br />
-          <div>
-          Equipe A 
-          <RadioGroup onChange={this.onChange} defaultValue="a">
-            <RadioButton value="1,50">1.50</RadioButton>
-            <RadioButton value="3">3</RadioButton>
-            <RadioButton value="4,5">4.5</RadioButton>
-          </RadioGroup>
-           Equipe B
+          <div id="account-sumup">
+            <h2>My account</h2>
+            <p>Public key : {window.web3.eth.accounts[0]}</p>
+            <p>Balance : {window.web3.eth.accounts[0]}</p>
           </div>
-          <br />
-          <label>Montant du pari  </label>
-          <input type="number" name="amount" length="2" onChange={this.onChangeAmount}/>
-          <br /><br />
-          <Button type="primary" onClick={this.toBet}>Parier</Button>
-          <br /><br />
-          <Button type="primary" onClick={this.play}>Jouer le match!</Button>
+        </header>
+        <div id="content">
+          <div id="next-matches">
+            <h2>Upcoming matches</h2>
+          </div>
+          <div className="App-intro">
+            <h2>Bet</h2>
+            <br /><br />
+            <div>
+              <span>Equipe A </span>
+              <RadioGroup onChange={this.onChange} defaultValue="a">
+                <RadioButton value="1,50">1.50</RadioButton>
+                <RadioButton value="3">3</RadioButton>
+                <RadioButton value="4,5">4.5</RadioButton>
+              </RadioGroup>
+              <span>Equipe B</span>
+            </div>
+            <br />
+            <label>Montant du pari  </label>
+            <input type="number" name="amount" length="2" onChange={this.onChangeAmount}/>
+            <br /><br />
+            <Button type="primary" onClick={this.toBet}>Parier</Button>
+            <br /><br />
+            <Button type="primary" onClick={this.play}>Jouer le match!</Button>
+          </div>
+          <div id="my-bets">
+            <h2>My bets</h2>
+          </div>
+        </div>
+        <div id="event-logs">
+          <h2>Smart contract events</h2>
         </div>
       </div>
     );
