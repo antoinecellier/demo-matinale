@@ -1,10 +1,9 @@
 import React, { Component } from 'react';
-import logo from './logo.svg';
 import { Radio, Button } from 'antd';
-import Web3 from 'web3';
 import 'antd/dist/antd.css';
 import './App.css';
-import betContract from './truffle-build/contracts/Bet.json';
+import BetService from './BetService.js';
+import moment from 'moment';
 const RadioButton = Radio.Button;
 const RadioGroup = Radio.Group;
 
@@ -13,32 +12,27 @@ class App extends Component {
   
   constructor(props) {
     super(props);
-    this.state = {bet: undefined, amount: null };
+    this.state = {bet: undefined, amount: null, matchs: [] };
+    this.betService = new BetService();
     this.onChange = this.onChange.bind(this);
     this.onChangeAmount = this.onChangeAmount.bind(this);
     this.toBet = this.toBet.bind(this);
     this.play = this.play.bind(this);
-    this.matchs = [{home:'France', guest: 'Russia', homeQuote: 3, guestQuote: 1.5}, {home:'Italy', guest: 'Danemark', homeQuote: 2, guestQuote: 2}];
-    this.bets = [{match: 'France-Russia', date: new Date() , montant: 10}];
+    this.createMatch = this.createMatch.bind(this);
+    /* this.matchs = [{home:'France', guest: 'Russia', homeQuote: 3, guestQuote: 1.5}, {home:'Italy', guest: 'Danemark', homeQuote: 2, guestQuote: 2}];
+     this.bets = [{match: 'France-Russia', date: new Date() , montant: 10}];
+    */
     this.eventsLog = [];
-    if(typeof window.web3 != 'undefined'){
-      console.log("Using web3 detected from external source like Metamask")
-      this.web3 = new Web3(window.web3.currentProvider) // eslint-disable-line no-undef
-   }else{
-      console.log("No web3 detected. Falling back to http://localhost:8545. You should remove this fallback when you deploy live, as it's inherently insecure. Consider switching to Metamask for development. More info here: http://truffleframework.com/tutorials/truffle-and-metamask");
-      this.web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545")) // eslint-disable-line no-undef
-   }
-   const betAbi = betContract.abi;
-   // TODO : ne fonctionne que si on fait un lien symbolique truffle-build dans src vers le répertoire de build de truffle
-   // ln -s ../build truffle-build
-   const MyContract = window.web3.eth.contract(betAbi);
-
-
-   this.state.ContractInstance = MyContract.at("0x00d34A6611cC7ffF292734880C020cb88a341b1B")
-   this.state.ResolvedBet = this.state.ContractInstance.ResolvedBet()
-   this.state.ResolvedBet.watch((error, result) => {
-     console.log(error, result)
-   })
+    this.betService.getBalance(this.betService.getCurrentEthereumAccountPubKey()).then(result => {
+      this.balance = result;
+      console.log('la thune  ' + result);
+    });
+    this.betService.watchBets();
+    this.createMatch();
+    this.betService.getMatchesToBetOn().then(result => {
+      console.log(result)
+      this.setState({ matchs: result})
+    });
   }
 
   onChange(e) {
@@ -50,23 +44,15 @@ class App extends Component {
   }
 
   toBet() {
-    this.state.ContractInstance.bet(
-      this.state.bet, true, false, false, "Equipe A", {
-      gas: 300000,
-      from: window.web3.eth.accounts[0],
-      value: window.web3.toWei(this.state.amount, 'ether')
-   }, (err, result) => {
-      console.log(err, result)
-   })
+    this.betService.toBet(this.state.bet, this.state.amount);
   }
 
   play() {
-    this.state.ContractInstance.resolveBet({
-      gas: 300000,
-      from: window.web3.eth.accounts[0]
-   }, (err, result) => {
-      console.log(err, result)
-   })
+    this.betService.toPlay();
+  }
+  
+  createMatch() {
+    this.betService.createMatch('FRANCE', 'BELGIQUE', 'demi-finale', 2);
   }
 
   render() {
@@ -77,13 +63,14 @@ class App extends Component {
           <h1 className="App-title">Paris sportif à travers la blockchain</h1>
           <div id="account-sumup">
             <h2>My account</h2>
-            <p>Public key : {window.web3.eth.accounts[0]}</p>
-            <p>Balance : {window.web3.eth.accounts[0]}</p>
+           <p>Public key : {this.betService.getCurrentEthereumAccountPubKey()}</p>
+            <p>Balance : {this.balance}</p>
           </div>
         </header>
         <div id="content">
           <div id="next-matches">
             <h2>Upcoming matches</h2>
+            {this.state.matchs.length}
           </div>
           <div className="App-intro">
             <h2>Bet</h2>
