@@ -24,14 +24,17 @@ class App extends Component {
     */
     this.eventsLog = [];
     this.betService.getBalance(this.betService.getCurrentEthereumAccountPubKey()).then(result => {
+      console.log(result)
       this.balance = result;
       console.log('la thune  ' + result);
     });
     this.betService.watchBets();
     this.createMatch();
-    this.betService.getMatchesToBetOn().then(result => {
-      console.log(result)
-      this.setState({ matchs: result})
+    this.betService.getMatchesToBetOn().then(results => {
+      this.setState({ 
+        matchs: results.map(
+          result => ({ homeTeam: result[1], externalTeam: result[2]}))
+      })
     });
   }
 
@@ -70,7 +73,11 @@ class App extends Component {
         <div id="content">
           <div id="next-matches">
             <h2>Upcoming matches</h2>
-            {this.state.matchs.length}
+            <ul>
+            {this.state.matchs.map(match => 
+              <li>{match.homeTeam} - {match.externalTeam}</li>
+            )}
+            </ul>
           </div>
           <div className="App-intro">
             <h2>Bet</h2>

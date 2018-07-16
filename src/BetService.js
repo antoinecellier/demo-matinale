@@ -2,7 +2,7 @@ import Web3 from 'web3';
 
 import betContract from './truffle-build/contracts/Bet.json';
 
-class BetService {
+class BetService {  
   constructor() {
     this.state = {bet: undefined, amount: null, matches : [] };
     this.toBet = this.toBet.bind(this);
@@ -55,13 +55,13 @@ class BetService {
   }
   
   getBalance(account){
-    return new Promise(function(resolve, reject){
-      window.web3.eth.getBalance(account, function(error, result){
+    return new Promise((resolve, reject) => {
+      this.web3.eth.getBalance(account, (error, result) => {
           if(error){
               reject(error);
           }
           else{
-              resolve(result);
+              resolve(this.web3.fromWei(result.toNumber(), 'ether'));
           }
       })
     }); 
