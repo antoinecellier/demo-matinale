@@ -24,7 +24,11 @@ class BetService {
    // TODO : ne fonctionne que si on fait un lien symbolique truffle-build dans src vers le répertoire de build de truffle
    // ln -s ../build truffle-build
    const MyContract = window.web3.eth.contract(betAbi);
-   this.state.ContractInstance = MyContract.at("0x0F86c9d45566a90714B0943D0C7ebd7dc2a69826")
+   this.state.ContractInstance = MyContract.at(this.getBetContractPubKey())
+  }
+
+  getBetContractPubKey() {
+    return "0x0F86c9d45566a90714B0943D0C7ebd7dc2a69826";
   }
 
   watchBets() {

@@ -9,7 +9,7 @@
 
 .App-header {
   background-color: #222;
-  height: 150px;
+  height: 200px;
   padding: 20px;
   color: white;
 }
@@ -35,6 +35,15 @@
   border: 2px solid black;
 }
 
+#next-matches ul{
+  max-height: 500px;
+  overflow-y: scroll;
+ }
+
+#next-matches ul li{
+ list-style: none;
+}
+
 #event-logs{
   border: 2px solid black;
 }
@@ -44,23 +53,30 @@
   border: 2px solid black;
 }
 
-#account-sumup{
+#accounts-sumup{
   display: flex;
   flex-direction: row;
   text-align: left;
-  margin-top: 30px;
+  margin-top: 10px;
   border: 2px double white;
   padding: 10px;
 }
+#accounts-sumup div{
+  width: 50%;
+  flex-direction: column;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 
-#account-sumup p{
+#accounts-sumup p{
   margin:auto 0px auto 30px;
   vertical-align: middle;
 }
 
-#account-sumup h2{
+#accounts-sumup div h2{
   color:white;
-  margin:auto;
+  width: 100%;
+  text-align: center;
 }
 
 @keyframes App-logo-spin {

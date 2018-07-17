@@ -26,8 +26,12 @@ class App extends Component {
     this.betService.getBalance(this.betService.getCurrentEthereumAccountPubKey()).then(result => {
       console.log(result)
       this.balance = result;
-      console.log('la thune  ' + result);
     });
+
+    this.betService.getBalance(this.betService.getBetContractPubKey()).then(result => {
+      this.contractBalance = result;
+    });
+
     this.betService.watchBets();
     this.createMatch();
     this.betService.getMatchesToBetOn().then(results => {
@@ -64,10 +68,17 @@ class App extends Component {
       <div className="App">
         <header className="App-header">
           <h1 className="App-title">Paris sportif à travers la blockchain</h1>
-          <div id="account-sumup">
-            <h2>My account</h2>
-           <p>Public key : {this.betService.getCurrentEthereumAccountPubKey()}</p>
-            <p>Balance : {this.balance}</p>
+          <div id="accounts-sumup">
+            <div>
+              <h2>My account</h2>
+              <p><strong>Public key :</strong> {this.betService.getCurrentEthereumAccountPubKey()}</p>
+              <p><strong>Balance :</strong> {this.balance}</p>
+            </div>
+            <div>
+              <h2>Bet contract</h2>
+              <p><strong>Public key :</strong> {this.betService.getBetContractPubKey()}</p>
+              <p><strong>Balance :</strong> {this.contractBalance}</p>
+            </div>
           </div>
         </header>
         <div id="content">
@@ -75,7 +86,7 @@ class App extends Component {
             <h2>Upcoming matches</h2>
             <ul>
             {this.state.matchs.map(match => 
-              <li>{match.homeTeam} - {match.externalTeam}</li>
+              <li><a>{match.homeTeam} - {match.externalTeam}</a></li>
             )}
             </ul>
           </div>
