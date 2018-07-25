@@ -36,7 +36,7 @@
 }
 
 #next-matches ul{
-  max-height: 500px;
+  max-height: 300px;
   overflow-y: scroll;
  }
 
@@ -78,7 +78,25 @@
   width: 100%;
   text-align: center;
 }
+#match-fields {
+  display: flex;
+  flex-direction: row;
+  flex-wrap:wrap;
+}
+#creationMatch label{
+  font-weight: bolder;
+  align-self: center;
+  width: 50%;
+}
 
+#creationMatch{
+  margin-top: 10px;
+  border-top: 3px solid black;
+}
+
+#createMatch{
+  margin-top: 10px;
+}
 @keyframes App-logo-spin {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }

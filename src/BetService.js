@@ -4,7 +4,7 @@ import betContract from './truffle-build/contracts/Bet.json';
 
 class BetService {  
   constructor() {
-    this.state = {bet: undefined, amount: null, matches : [] };
+    this.state = {bet: undefined, amount: null, matches : [], eventLogs: [] };
     this.toBet = this.toBet.bind(this);
     this.play = this.play.bind(this);
     this.getBalance = this.getBalance.bind(this);
@@ -28,7 +28,7 @@ class BetService {
   }
 
   getBetContractPubKey() {
-    return "0x0F86c9d45566a90714B0943D0C7ebd7dc2a69826";
+    return "0x00d34A6611cC7ffF292734880C020cb88a341b1B";
   }
 
   watchBets() {
@@ -111,7 +111,37 @@ class BetService {
       });
     }); 
   }
-  
+
+  printEvent(event){
+    return event.event + ` : ` +  JSON.stringify(event.args);
+  }
+
+  startWatchingEvents() {
+    this.state.events = this.state.ContractInstance.allEvents({fromBlock: 0, toBlock: 'latest'});
+     // would get all past logs again.
+    this.state.events.get((error, logs) => { 
+      if (error) {
+        console.log('Error in myEvent event handler: ' + error);
+      } else {
+        logs.forEach(log => {
+          this.state.eventLogs.push(this.printEvent(log));
+        });
+      }
+    });
+
+    this.state.events.watch((error, result) => {
+      this.state.eventLogs.push(this.printEvent(result));
+    });
+  }
+
+  stopWatchingEvents(){
+    // would stop and uninstall the filter
+    this.state.events.stopWatching();
+  }
+
 }
+
+
+
 
 export default BetService;

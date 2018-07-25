@@ -19,6 +19,8 @@ contract Bet {
     
     uint public matchIDGenerator = 1;
 
+    function getMatchsLenght() public view returns(uint) { return matchs.length; }
+
     struct Match {
         uint id;
         string homeTeam;
@@ -30,8 +32,11 @@ contract Bet {
         bool settled;
     }
 
+    event CreateMatch(string _homeTeam, string _externalTeam, string _libelle, uint256 _date, uint _matchIDGenerator);
+
     function createMatch(string _homeTeam, string _externalTeam, string _libelle, uint256 _date) external {
         matchIDGenerator++;
+        emit CreateMatch(_homeTeam, _externalTeam, _libelle, _date, matchIDGenerator);
         Match memory newMatch = Match(matchIDGenerator, _homeTeam, _externalTeam, true, true, _libelle, _date, false);
         idToMatch[matchIDGenerator] = newMatch;
         matchs.push(newMatch);
