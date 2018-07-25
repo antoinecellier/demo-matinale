@@ -13,26 +13,43 @@ contract Bet {
     
    
 
-    mapping(string => Match) idToMatch;
+    mapping(uint => Match) idToMatch;
+
+    Match[] public matchs;
+    
+    uint public matchIDGenerator = 1;
+
+    function getMatchsLenght() public view returns(uint) { return matchs.length; }
 
     struct Match {
-        string id;
+        uint id;
         string homeTeam;
         string externalTeam;
-        bool victory;
+        bool homeVictory;
         bool equality;
-        string team;
+        string libelle;
         uint256 date; 
+        bool settled;
+    }
+
+    event CreateMatch(string _homeTeam, string _externalTeam, string _libelle, uint256 _date, uint _matchIDGenerator);
+
+    function createMatch(string _homeTeam, string _externalTeam, string _libelle, uint256 _date) external {
+        matchIDGenerator++;
+        emit CreateMatch(_homeTeam, _externalTeam, _libelle, _date, matchIDGenerator);
+        Match memory newMatch = Match(matchIDGenerator, _homeTeam, _externalTeam, true, true, _libelle, _date, false);
+        idToMatch[matchIDGenerator] = newMatch;
+        matchs.push(newMatch);
     }
 
     struct Betting {
         address bettor;
         uint amount;
         uint quotation;
-        bool victory;
-        bool equality;
         string match_id;
-        string team;
+        bool victoryBet;
+        bool equalityBet;
+        string onTeam;
     }
 
     mapping(address => Betting) addressToBet;
@@ -46,11 +63,13 @@ contract Bet {
 
     function bet(uint _quotation, bool _victory, bool _equality, string match_id, string _team) payable external {
         addressToBet[msg.sender] = 
-            Betting(msg.sender, msg.value, _quotation, _victory, _equality, match_id, _team);
+            Betting(msg.sender, msg.value, _quotation, match_id, _victory, _equality,  _team);
         
 
         addressToHistory[msg.sender].push(addressToBet[msg.sender]);
     }
+
+   
 
     function resolveBet() external {
         Betting memory currentBet = addressToBet[msg.sender];
