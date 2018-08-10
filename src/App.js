@@ -12,24 +12,28 @@ class App extends Component {
   
   constructor(props) {
     super(props);
-    this.state = {bet: undefined, amount: null, matchs: [] };
+    this.state = {bet: undefined, amount: null, matchs: [], eventLogs: [] };
     this.betService = new BetService();
-    this.onChange = this.onChange.bind(this);
-    this.onChangeAmount = this.onChangeAmount.bind(this);
-    this.onChangeHomeTeam = this.onChangeHomeTeam.bind(this);
-    this.onChangeExternalTeam = this.onChangeExternalTeam.bind(this);
-    this.onChangeMatchLabel = this.onChangeMatchLabel.bind(this);
 
-    this.toBet = this.toBet.bind(this);
-    this.play = this.play.bind(this);
-    this.createMatch = this.createMatch.bind(this);
-    this.addMatch = this.addMatch.bind(this);
-    this.retrieveMatchs = this.retrieveMatchs.bind(this);
-
+    const methods = [
+      this.onChange, 
+      this.onChangeAmount,
+      this.onChangeHomeTeam,
+      this.onChangeExternalTeam,
+      this.onChangeMatchLabel,
+      this.toBet,
+      this.play,
+      this.createMatch,
+      this.addMatch,
+      this.retrieveMatchs
+    ]
+    for (let method of methods ) {
+     this[method.name] = method.bind(this)
+    }
+  
     /* this.matchs = [{home:'France', guest: 'Russia', homeQuote: 3, guestQuote: 1.5}, {home:'Italy', guest: 'Danemark', homeQuote: 2, guestQuote: 2}];
      this.bets = [{match: 'France-Russia', date: new Date() , montant: 10}];
     */
-    this.eventsLog = [];
     this.betService.getBalance(this.betService.getCurrentEthereumAccountPubKey()).then(result => {
       console.log(result)
       this.balance = result;
@@ -38,7 +42,13 @@ class App extends Component {
     this.betService.getBalance(this.betService.getBetContractPubKey()).then(result => {
       this.contractBalance = result;
     });
-
+    this.betService.eventSubject.subscribe(event => {
+      console.log("New event", event);
+      this.setState({
+        ...this.state,
+        eventLogs : this.state.eventLogs.concat([event])
+      });
+    });
     this.betService.startWatchingEvents();
     this.retrieveMatchs();
   }
@@ -49,6 +59,7 @@ class App extends Component {
         matchs: results.map(
           result => ({ homeTeam: result[1], externalTeam: result[2]}))
       })
+      this.forceUpdate();
     });
   }
 
@@ -86,7 +97,7 @@ class App extends Component {
 
   addMatch() {
     this.createMatch();
-    this.retrieveMatchs();
+    setTimeout(this.retrieveMatchs, 10000);
   }
 
   render() {
@@ -155,7 +166,7 @@ class App extends Component {
         </div>
         <div id="event-logs">
           <h2>Smart contract events</h2>
-          {this.betService.state.eventLogs.map(event => 
+          {this.state.eventLogs.map(event => 
               <p>{event}</p>
           )}
           

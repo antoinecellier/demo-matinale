@@ -2,6 +2,8 @@ import Web3 from 'web3';
 
 import betContract from './truffle-build/contracts/Bet.json';
 
+import { Subject } from 'rxjs';
+
 class BetService {  
   constructor() {
     this.state = {bet: undefined, amount: null, matches : [], eventLogs: [] };
@@ -10,10 +12,12 @@ class BetService {
     this.getBalance = this.getBalance.bind(this);
     this.createMatch = this.createMatch.bind(this);
     this.getMatchesToBetOn = this.getMatchesToBetOn.bind(this);
-
+    this.eventSubject = new Subject();
     this.getCurrentEthereumAccountPubKey = this.getCurrentEthereumAccountPubKey.bind(this);
+    this.startWatchingEvents = this.startWatchingEvents.bind(this);
+    this.stopWatchingEvents = this.stopWatchingEvents.bind(this);
 
-    if(typeof window.web3 != 'undefined'){
+    if(typeof window.web3 !== 'undefined'){
       console.log("Using web3 detected from external source like Metamask")
       this.web3 = new Web3(window.web3.currentProvider) // eslint-disable-line no-undef
    }else{
@@ -89,12 +93,10 @@ class BetService {
     return new Promise((resolve, reject)=> {
       let matches = [];
       let contractInst = this.state.ContractInstance;
-      console.log(contractInst)
-      this.state.ContractInstance.getMatchsLenght.call(function(err, lenght){
+      this.state.ContractInstance.getMatchsLenght.call(function(err, matchsLenght){
         if(err){
           reject("Erreur récupération lenght",err);
         }
-        const matchsLenght = lenght;
         let matchCounter = 0;
         for(let i = 0; i < matchsLenght ; i++ ){
           contractInst.matchs.call(i,function(err, match){
@@ -102,7 +104,6 @@ class BetService {
               reject("Erreur récupération match",err);
             }
             matches.push(match);
-            console.log("Counter " + (matchCounter+1) + "Match counter " + matchsLenght);
             if(++matchCounter == matchsLenght){
               resolve(matches);
             }
@@ -117,26 +118,15 @@ class BetService {
   }
 
   startWatchingEvents() {
-    this.state.events = this.state.ContractInstance.allEvents({fromBlock: 0, toBlock: 'latest'});
-     // would get all past logs again.
-    this.state.events.get((error, logs) => { 
-      if (error) {
-        console.log('Error in myEvent event handler: ' + error);
-      } else {
-        logs.forEach(log => {
-          this.state.eventLogs.push(this.printEvent(log));
-        });
-      }
-    });
-
-    this.state.events.watch((error, result) => {
-      this.state.eventLogs.push(this.printEvent(result));
+    this.state.eventsFilter = this.state.ContractInstance.allEvents({fromBlock: 0, toBlock: 'latest'});
+    this.state.eventsFilter.watch((error, result) => {
+      this.eventSubject.next(this.printEvent(result));
     });
   }
 
   stopWatchingEvents(){
     // would stop and uninstall the filter
-    this.state.events.stopWatching();
+    this.state.eventsFilter.stopWatching();
   }
 
 }
