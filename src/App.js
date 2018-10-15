@@ -12,20 +12,24 @@ class App extends Component {
   
   constructor(props) {
     super(props);
-    this.state = {bet: undefined, amount: null, matchs: [], eventLogs: [] };
+    this.state = {bet: undefined, match: undefined, selectedMatch: , amount: null, matchs: [], eventLogs: [] };
     this.betService = new BetService();
 
     const methods = [
-      this.onChange, 
-      this.onChangeAmount,
-      this.onChangeHomeTeam,
-      this.onChangeExternalTeam,
+      this.onChangeBetAmount,
+      this.onChangeMatchHomeTeam,
+      this.onChangeMatchExternalTeam,
       this.onChangeMatchLabel,
+      this.onChangeBetWinningTeam,
+      this.getUpdatesFromContract,
+      this.getContractAccountBalance,
+      this.getCurrentUserBalance,
       this.toBet,
       this.play,
       this.createMatch,
       this.addMatch,
-      this.retrieveMatchs
+      this.retrieveMatchs,
+      this.selectMatchToBetOn
     ]
     for (let method of methods ) {
      this[method.name] = method.bind(this)
@@ -34,23 +38,9 @@ class App extends Component {
     /* this.matchs = [{home:'France', guest: 'Russia', homeQuote: 3, guestQuote: 1.5}, {home:'Italy', guest: 'Danemark', homeQuote: 2, guestQuote: 2}];
      this.bets = [{match: 'France-Russia', date: new Date() , montant: 10}];
     */
-    this.betService.getBalance(this.betService.getCurrentEthereumAccountPubKey()).then(result => {
-      console.log(result)
-      this.balance = result;
-    });
-
-    this.betService.getBalance(this.betService.getBetContractPubKey()).then(result => {
-      this.contractBalance = result;
-    });
-    this.betService.eventSubject.subscribe(event => {
-      console.log("New event", event);
-      this.setState({
-        ...this.state,
-        eventLogs : this.state.eventLogs.concat([event])
-      });
-    });
-    this.betService.startWatchingEvents();
-    this.retrieveMatchs();
+    getCurrentUserBalance();
+    getContractAccountBalance();
+    getUpdatesFromContract();
   }
 
   retrieveMatchs(){
@@ -59,32 +49,70 @@ class App extends Component {
         matchs: results.map(
           result => ({ homeTeam: result[1], externalTeam: result[2]}))
       })
-      this.forceUpdate();
     });
   }
 
-  onChange(e) {
-    this.state.bet = e.target.value;
+  getCurrentUserBalance() {
+    this.betService.getBalance(this.betService.getCurrentEthereumAccountPubKey()).then(result => {
+      console.log(result)
+      this.balance = result;
+    });
+  }
+  
+  getContractAccountBalance(){
+    this.betService.getBalance(this.betService.getBetContractPubKey()).then(result => {
+      this.contractBalance = result;
+    });
   }
 
-  onChangeAmount(e) {
-    this.state.amount = e.target.value;
+  getUpdatesFromContract(){
+    this.startWatchingEvents();
+    setInterval(this.retrieveMatchs, 5000);
   }
 
-  onChangeHomeTeam(e) {
-    this.state.homeTeam = e.target.value;
+  startWatchingEvents(){
+    this.betService.eventSubject.subscribe(event => {
+      console.log("New event", event);
+      this.setState({
+        ...this.state,
+        eventLogs : this.state.eventLogs.concat([event])
+      });
+    });
+    this.betService.startWatchingEvents();
+  }
+    
+  
+  selectMatchToBetOn(matchId){
+    this.state.selectedMatch = matchs.find(match => match.id === matchId);
   }
 
-  onChangeExternalTeam(e) {
-    this.state.externalTeam = e.target.value;
+  onChangeBetWinningTeam(e) {
+    this.state.bet.amount = e.target.value;
+  }
+
+
+  onChangeBetAmount(e) {
+    this.state.bet.amount = e.target.value;
+  }
+
+  onChangeMatchHomeTeam(e) {
+    this.state.match.homeTeam = e.target.value;
+  }
+
+  onChangeMatchExternalTeam(e) {
+    this.state.match.externalTeam = e.target.value;
   }
 
   onChangeMatchLabel(e) {
-    this.state.matchLabel = e.target.value;
+    this.state.match.label = e.target.value;
   }
 
-  toBet() {
-    this.betService.toBet(this.state.bet, this.state.amount);
+  onChangeMatchHomeVictoryQuotation(e){
+    this.state.match.homeVictoryQuotation = e.target.value;
+  }
+
+  bet() {
+    this.betService.toBet(this.state.selectedMatch.id, this.state.bet.willBeAnHomeTeamWin, this.state.bet.willBeADraw, this.state.betAmount);
   }
 
   play() {
@@ -92,7 +120,7 @@ class App extends Component {
   }
   
   createMatch() {
-    this.betService.createMatch(this.state.homeTeam, this.state.externalTeam, this.state.matchLabel, 2);
+    this.betService.createMatch(this.state.match.homeTeam, this.state.match.externalTeam, this.state.match.label, 2, this.state.match.homeVictoryQuotation);
   }
 
   addMatch() {
@@ -124,7 +152,7 @@ class App extends Component {
             <h2>Upcoming matches</h2>
             <ul>
             {this.state.matchs.map(match => 
-              <li><a>{match.homeTeam} - {match.externalTeam}</a></li>
+              <li><a onClick={this.selectMatchToBetOn(match.id)}>{match.homeTeam} - {match.externalTeam}</a></li>
             )}
             </ul>
            
@@ -133,19 +161,17 @@ class App extends Component {
             <h2>Bet</h2>
             <br /><br />
             <div>
-              <span>Equipe A </span>
-              <RadioGroup onChange={this.onChange} defaultValue="a">
-                <RadioButton value="1,50">1.50</RadioButton>
-                <RadioButton value="3">3</RadioButton>
-                <RadioButton value="4,5">4.5</RadioButton>
-              </RadioGroup>
-              <span>Equipe B</span>
+            <RadioGroup id="betWinningTeamRadio" onChange={this.onChangeBetWinningTeam} defaultValue="0">
+                  <RadioButton value="1">{selectedMatch.homeTeam} win</RadioButton>
+                  <RadioButton value="0">Equality</RadioButton>
+                  <RadioButton value="-1">{selectedMatch.externalTeam} win</RadioButton>
+            </RadioGroup>
             </div>
             <br />
             <label>Montant du pari  </label>
-            <input type="number" name="amount" length="2" onChange={this.onChangeAmount}/>
+            <input type="number" name="betAmount" length="2" onChange={this.onChangeBetAmount}/>
             <br /><br />
-            <Button type="primary" onClick={this.toBet}>Parier</Button>
+            <Button type="primary" onClick={this.bet}>Parier</Button>
             <br /><br />
             <Button type="primary" onClick={this.play}>Jouer le match!</Button>
             
@@ -155,8 +181,14 @@ class App extends Component {
               <div id="match-fields">
                 <label htmlFor="homeTeam"> Home team </label> 
                 <label htmlFor="externalTeam"> External team </label> 
-                <input id="homeTeam" type="text" onChange={this.onChangeHomeTeam} /> - <input id="externalTeam" type="text" onChange={this.onChangeExternalTeam}/>
-              </div>
+                <input id="homeTeam" type="text" onChange={this.onChangeMatchHomeTeam} /> - <input id="externalTeam" type="text" onChange={this.onChangeMatchExternalTeam}/>
+                <label htmlFor="homeVictoryQuotation"> Home victory quotation </label>
+                <RadioGroup id="homeVictoryQuotation" onChange={this.onChangeMatchHomeVictoryQuotation} defaultValue="3">
+                  <RadioButton value="1,50">1.50</RadioButton>
+                  <RadioButton value="3">3</RadioButton>
+                  <RadioButton value="4,5">4.5</RadioButton>
+                </RadioGroup>
+               </div>
               <Button id="createMatch" type="primary" onClick={this.addMatch}>Créer le match!</Button>
             </form>
           </div>

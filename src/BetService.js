@@ -1,23 +1,29 @@
 import Web3 from 'web3';
 
-import betContract from './truffle-build/contracts/Bet.json';
+import betContract from './truffle-build/contracts/Betting.json';
 
 import { Subject } from 'rxjs';
 
 class BetService {  
   constructor() {
     this.state = {bet: undefined, amount: null, matches : [], eventLogs: [] };
-    this.toBet = this.toBet.bind(this);
-    this.play = this.play.bind(this);
-    this.getBalance = this.getBalance.bind(this);
-    this.createMatch = this.createMatch.bind(this);
-    this.getMatchesToBetOn = this.getMatchesToBetOn.bind(this);
-    this.eventSubject = new Subject();
-    this.getCurrentEthereumAccountPubKey = this.getCurrentEthereumAccountPubKey.bind(this);
-    this.startWatchingEvents = this.startWatchingEvents.bind(this);
-    this.stopWatchingEvents = this.stopWatchingEvents.bind(this);
+    const methods = [
+      this.toBet, 
+      this.play,
+      this.getBalance,
+      this.createMatch,
+      this.getMatchesToBetOn,
+      this.getCurrentEthereumAccountPubKey,
+      this.startWatchingEvents,
+      this.stopWatchingEvents
+    ]
+    for (let method of methods ) {
+     this[method.name] = method.bind(this)
+    }
 
-    if(typeof window.web3 !== 'undefined'){
+    this.eventSubject = new Subject();
+
+    if(typeof window.web3 != 'undefined'){
       console.log("Using web3 detected from external source like Metamask")
       this.web3 = new Web3(window.web3.currentProvider) // eslint-disable-line no-undef
    }else{
@@ -42,9 +48,9 @@ class BetService {
     })
   }
  
-  toBet(winningTeam, amountToBet) {
+  toBet(matchId, betOnHomeTeamWin, betOnHomeTeamEquality, amountToBet) {
     this.state.ContractInstance.bet(
-      winningTeam, true, false, false, "Equipe A", {
+      betOnHomeTeamWin, betOnHomeTeamEquality, matchId, {
       gas: 300000,
       from: this.getCurrentEthereumAccountPubKey(),
       value: window.web3.toWei(amountToBet, 'ether')
@@ -79,8 +85,8 @@ class BetService {
     return this.web3.eth.accounts[0];
   }
 
-  createMatch(homeTeam, challengerTeam, libelle, date) {
-    this.state.ContractInstance.createMatch(homeTeam, challengerTeam, libelle, date,{
+  createMatch(homeTeam, challengerTeam, libelle, date, quotation) {
+    this.state.ContractInstance.createMatch(homeTeam, challengerTeam, libelle, date, quotation, {
       gas: 1000000,
       from: this.getCurrentEthereumAccountPubKey()
    }, (err, result) => {
