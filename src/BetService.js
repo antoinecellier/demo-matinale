@@ -38,7 +38,7 @@ class BetService {
   }
 
   getBetContractPubKey() {
-    return "0x00d34A6611cC7ffF292734880C020cb88a341b1B";
+    return "0xc4F13832B90c1C02e1eb82c67D7f494e224d839F";
   }
 
   watchBets() {
@@ -86,7 +86,7 @@ class BetService {
   }
 
   createMatch(homeTeam, challengerTeam, libelle, date, quotation) {
-    this.state.ContractInstance.createMatch(homeTeam, challengerTeam, libelle, date, quotation, {
+    this.state.ContractInstance.createMatch(homeTeam, challengerTeam, libelle, date, Math.floor(quotation * 100), {
       gas: 1000000,
       from: this.getCurrentEthereumAccountPubKey()
    }, (err, result) => {

@@ -85,7 +85,7 @@ contract Betting {
         for(uint x = 0; x < betsOnCurrentMatch.length; x++ ){
             if((_homeVictory && betsOnCurrentMatch[x].homeVictoryBet) || 
                (_equality && betsOnCurrentMatch[x].equalityBet)){
-                uint gain = (betsOnCurrentMatch[x].amount * currentMatch.quotation);
+                uint gain = (betsOnCurrentMatch[x].amount * currentMatch.quotation)/100;
                 betsOnCurrentMatch[x].bettor.transfer(gain);
                 emit ResolvedBet(
                     betsOnCurrentMatch[x].bettor, 
