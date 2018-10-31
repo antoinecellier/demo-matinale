@@ -49,7 +49,7 @@ class BetService {
   }
  
   toBet(matchId, betOnHomeTeamWin, betOnHomeTeamEquality, amountToBet) {
-    this.state.ContractInstance.bet(
+    this.state.ContractInstance.betOnMatch(
       betOnHomeTeamWin, betOnHomeTeamEquality, matchId, {
       gas: 300000,
       from: this.getCurrentEthereumAccountPubKey(),
@@ -105,11 +105,12 @@ class BetService {
         }
         let matchCounter = 0;
         for(let i = 0; i < matchsLenght ; i++ ){
-          contractInst.matchs.call(i,function(err, match){
+          contractInst.matchs.call(i,(err, match) => {
             if(err){
               reject("Erreur récupération match",err);
             }
-            matches.push(match);
+            console.log(match);
+          matches.push({ id: match[0].toNumber(), homeTeam: match[1], externalTeam: match[2], libelle: match[5]});
             if(++matchCounter == matchsLenght){
               resolve(matches);
             }
