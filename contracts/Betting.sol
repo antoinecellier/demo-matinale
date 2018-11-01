@@ -57,28 +57,28 @@ contract Betting {
         matchIDGenerator++;
         emit CreateMatch(_homeTeam, _externalTeam, _libelle, _date, matchIDGenerator, _quotation);
         matchs.push(Match(matchIDGenerator, _homeTeam, _externalTeam, true, true, _libelle, _date, false, _quotation));
-        //matchs[matchIDGenerator].id = matchIDGenerator;
-        // matchs[matchIDGenerator].homeTeam = _homeTeam;
-        // matchs[matchIDGenerator].externalTeam = _externalTeam;
-        // matchs[matchIDGenerator].libelle = _libelle;
-        // matchs[matchIDGenerator].settled = false;
-        // matchs[matchIDGenerator].date = _date;
     }
 
-    event BetOnMatch(address bettor, bool _homeVictory, bool _equality, uint match_id);
+    // event BetOnMatch(address bettor, uint match_id, uint amount, bool _homeVictory, bool _equality);
+     event BetOnMatch(address bettor, bool _homeVictory, bool _equality, uint match_id);
     
     function betOnMatch(bool _homeVictory, bool _equality, uint match_id) payable external {
         Bet memory newBet = Bet(msg.sender, msg.value, match_id, _homeVictory, _equality);
         addressToBets[msg.sender].push(newBet);
         betsOnMatch[match_id].push(newBet);
         emit BetOnMatch(msg.sender, _homeVictory, _equality, match_id);
+        // emit BetOnMatch(msg.sender, match_id, msg.value, _homeVictory, _equality);
     }
 
     event ResolvedBet(address bettor, uint gain, uint amount, uint quotation);
     event ResolvedMatch(uint match_id, bool homeVictory, bool equality);
+    event debugResolvedMatch(uint match_id, bool homeVictory, bool equality, bool settled);
 
     function resolveMatch(uint _match_id, bool _homeVictory, bool _equality) external onlyowner {
+        emit ResolvedMatch(_match_id, _homeVictory, _equality);
         Match memory currentMatch = matchs[_match_id];
+        
+        emit debugResolvedMatch(_match_id, _homeVictory, _equality, currentMatch.settled);
         require(!currentMatch.settled);
         currentMatch.settled = true;
         Bet[] storage betsOnCurrentMatch = betsOnMatch[_match_id];
