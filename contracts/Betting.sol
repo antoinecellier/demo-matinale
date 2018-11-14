@@ -15,7 +15,7 @@ contract Betting {
 
     Match[] public matchs;
     
-    uint public matchIDGenerator = 1;
+    uint public matchIDGenerator = 0;
 
     struct Match {
         uint id;
@@ -46,6 +46,25 @@ contract Betting {
         owner = msg.sender;
     }
 
+   
+ 
+    function getUserBets(address better) public view returns(uint[], uint[], bool[], bool[]) {
+        uint[] memory amounts = new uint[](addressToBets[better].length);
+        uint[] memory match_ids = new uint[](addressToBets[better].length);
+        bool[] memory homeVictoryBets = new bool[](addressToBets[better].length);
+        bool[] memory equalityBets = new bool[](addressToBets[better].length);
+        
+        for (uint i = 0; i < addressToBets[better].length; i++) {
+            Bet storage bet =  addressToBets[better][i];
+            amounts[i] = bet.amount;
+            match_ids[i] = bet.match_id;
+            homeVictoryBets[i] = bet.homeVictoryBet;
+            equalityBets[i] = bet.equalityBet;
+        }
+        
+        return (amounts, match_ids, homeVictoryBets, equalityBets);  
+    }
+
 
     function getMatchsLenght() public view returns(uint) { return matchs.length; }
 
@@ -73,18 +92,22 @@ contract Betting {
     event ResolvedBet(address bettor, uint gain, uint amount, uint quotation);
     event ResolvedMatch(uint match_id, bool homeVictory, bool equality);
     event debugResolvedMatch(uint match_id, bool homeVictory, bool equality, bool settled);
-
+    event BetTreatment(address bettor, uint amount, bool homeVictory, bool equality);
     function resolveMatch(uint _match_id, bool _homeVictory, bool _equality) external onlyowner {
         emit ResolvedMatch(_match_id, _homeVictory, _equality);
-        Match memory currentMatch = matchs[_match_id];
+        Match storage currentMatch = matchs[_match_id-1];
         
         emit debugResolvedMatch(_match_id, _homeVictory, _equality, currentMatch.settled);
         require(!currentMatch.settled);
         currentMatch.settled = true;
+        currentMatch.homeVictory = _homeVictory;
+        currentMatch.equality = _equality;
         Bet[] storage betsOnCurrentMatch = betsOnMatch[_match_id];
         for(uint x = 0; x < betsOnCurrentMatch.length; x++ ){
+            emit BetTreatment(betsOnCurrentMatch[x].bettor, betsOnCurrentMatch[x].amount, betsOnCurrentMatch[x].homeVictoryBet, betsOnCurrentMatch[x].equalityBet );
             if((_homeVictory && betsOnCurrentMatch[x].homeVictoryBet) || 
-               (_equality && betsOnCurrentMatch[x].equalityBet)){
+               (_equality && betsOnCurrentMatch[x].equalityBet) ||
+                (!_homeVictory && !_equality && !betsOnCurrentMatch[x].homeVictoryBet && !betsOnCurrentMatch[x].equalityBet)){
                 uint gain = (betsOnCurrentMatch[x].amount * currentMatch.quotation)/100;
                 betsOnCurrentMatch[x].bettor.transfer(gain);
                 emit ResolvedBet(

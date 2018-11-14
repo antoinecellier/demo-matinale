@@ -111,9 +111,9 @@ class BetService {
               settledOnHomeVictory: match[3], 
               settledOnEquality: match[4], 
               libelle: match[5],
-              date: match[6],
+              date: match[6].toNumber(),
               settled: match[7],
-              quotation: match[8]
+              quotation: match[8].toNumber()
              });
             if (++matchCounter == matchsLenght) {
               resolve(matches);
