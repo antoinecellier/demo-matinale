@@ -1,10 +1,6 @@
 pragma solidity ^0.4.17;
 
 contract Betting {
-    // un smart contract de pari avec une ihm pour déclencher les évenements
-    // function view -> sur tous les matchs pariables avec leurs cotes
-    // function view -> sur tous les paris en cours
-    // function view -> historique de mes paris 
     // héritage: contract Bet -> SoccerBet
     // mortal.sol & owned.sol -> https://github.com/Apress/introducing-ethereum-solidity
     // créer un smart contract maintenable
@@ -78,15 +74,13 @@ contract Betting {
         matchs.push(Match(matchIDGenerator, _homeTeam, _externalTeam, true, true, _libelle, _date, false, _quotation));
     }
 
-    // event BetOnMatch(address bettor, uint match_id, uint amount, bool _homeVictory, bool _equality);
-     event BetOnMatch(address bettor, bool _homeVictory, bool _equality, uint match_id);
+    event BetOnMatch(address bettor, bool _homeVictory, bool _equality, uint match_id, uint amount);
     
     function betOnMatch(bool _homeVictory, bool _equality, uint match_id) payable external {
         Bet memory newBet = Bet(msg.sender, msg.value, match_id, _homeVictory, _equality);
         addressToBets[msg.sender].push(newBet);
         betsOnMatch[match_id].push(newBet);
-        emit BetOnMatch(msg.sender, _homeVictory, _equality, match_id);
-        // emit BetOnMatch(msg.sender, match_id, msg.value, _homeVictory, _equality);
+        emit BetOnMatch(msg.sender, _homeVictory, _equality, match_id, msg.value);
     }
 
     event ResolvedBet(address bettor, uint gain, uint amount, uint quotation);

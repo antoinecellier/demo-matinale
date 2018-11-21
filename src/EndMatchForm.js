@@ -32,7 +32,6 @@ class EndMatchform extends Component {
     }
 
     endMatch() {
-        console.log("plop")
         this.betService.resolveMatch(this.props.selectedMatch.id, this.state.hasHomeWon, this.state.wasThereEquality);
     }
 

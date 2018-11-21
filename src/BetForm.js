@@ -12,6 +12,7 @@ class BetForm extends Component {
         this.state = { 
             bet: {},
             matchResult: {
+                willBeAnHomeTeamWin:false,
                 willBeADraw:true
             } 
         };

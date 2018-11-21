@@ -33,8 +33,8 @@ class BetService {
     const betAbi = betContract.abi;
     // TODO : ne fonctionne que si on fait un lien symbolique truffle-build dans src vers le répertoire de build de truffle
     // ln -s ../build truffle-build
-    const MyContract = window.web3.eth.contract(betAbi);
-    this.state.ContractInstance = MyContract.at(this.getBetContractPubKey())
+    this.state.MyContract = window.web3.eth.contract(betAbi);
+    this.state.ContractInstance = this.state.MyContract.at(this.getBetContractPubKey())
   }
 
   getBetContractPubKey() {
@@ -55,7 +55,7 @@ class BetService {
   resolveMatch(matchId, hasHomeTeamWon, wasThereEquality) {
     this.state.ContractInstance.resolveMatch(
       matchId, hasHomeTeamWon, wasThereEquality,{
-      gas: 300000,
+      gas: 3000000,
       from: this.getCurrentEthereumAccountPubKey()
     }, (err, result) => {
       console.log(err, result)
@@ -125,6 +125,7 @@ class BetService {
   }
 
   printEvent(event) {
+    console.log("salut", event);
     return event.event + ` : ` + JSON.stringify(event.args);
   }
 
@@ -133,11 +134,20 @@ class BetService {
     this.state.eventsFilter.watch((error, result) => {
       this.eventSubject.next(this.printEvent(result));
     });
+    console.log(this.state.ContractInstance);
+    this.state.betTreatmentFilter = this.state.ContractInstance.ResolvedBet({}, { fromBlock: 0, toBlock: 'latest' }, function(error, result){
+      if (!error) {
+       this.eventSubject.next(this.printEvent(result));
+      }else {
+       console.log(error);
+      }
+     });
   }
 
   stopWatchingEvents() {
     // will stop and uninstall the filter
     this.state.eventsFilter.stopWatching();
+    this.state.betTreatmentFilter.stopWatching();
   }
 
 }
