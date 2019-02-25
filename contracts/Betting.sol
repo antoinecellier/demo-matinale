@@ -1,4 +1,4 @@
-pragma solidity ^0.4.17;
+pragma solidity 0.5.0;
 
 contract Betting {
     // héritage: contract Bet -> SoccerBet
@@ -26,7 +26,7 @@ contract Betting {
     }
 
     struct Bet {
-        address bettor;
+        address payable bettor;
         uint amount;
         uint match_id;
         bool homeVictoryBet;
@@ -44,7 +44,8 @@ contract Betting {
 
    
  
-    function getUserBets(address better) public view returns(uint[], uint[], bool[], bool[]) {
+    function getUserBets(address better) 
+        public view returns(uint[] memory, uint[] memory, bool[] memory, bool[] memory) {
         uint[] memory amounts = new uint[](addressToBets[better].length);
         uint[] memory match_ids = new uint[](addressToBets[better].length);
         bool[] memory homeVictoryBets = new bool[](addressToBets[better].length);
@@ -68,7 +69,7 @@ contract Betting {
     
     modifier onlyowner { if (msg.sender == owner) _; }
      
-    function createMatch(string _homeTeam, string _externalTeam, string _libelle, uint256 _date, uint _quotation) external onlyowner {
+    function createMatch(string calldata _homeTeam, string calldata _externalTeam, string calldata _libelle, uint256 _date, uint _quotation) external onlyowner {
         matchIDGenerator++;
         emit CreateMatch(_homeTeam, _externalTeam, _libelle, _date, matchIDGenerator, _quotation);
         matchs.push(Match(matchIDGenerator, _homeTeam, _externalTeam, true, true, _libelle, _date, false, _quotation));

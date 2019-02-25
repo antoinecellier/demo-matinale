@@ -1,6 +1,6 @@
 import Web3 from 'web3';
 
-import betContract from './truffle-build/contracts/Betting.json';
+import betContract from './contracts/Betting.json';
 
 import { Subject } from 'rxjs';
 
@@ -38,7 +38,7 @@ class BetService {
   }
 
   getBetContractPubKey() {
-    return "0xc4F13832B90c1C02e1eb82c67D7f494e224d839F";
+    return "0x1416D462696aa7f86a4376eED6967983539c7933";
   }
 
   bet(matchId, betOnHomeTeamWin, betOnHomeTeamEquality, amountToBet) {
@@ -94,10 +94,14 @@ class BetService {
       let matches = [];
       let contractInst = this.state.ContractInstance;
       this.state.ContractInstance.getMatchsLenght.call(function (err, matchsLenght) {
+
         if (err) {
           reject("Erreur récupération lenght", err);
         }
+
         let matchCounter = 0;
+        console.log(matchsLenght)
+
         for (let i = 0; i < matchsLenght; i++) {
           contractInst.matchs.call(i, (err, match) => {
             if (err) {
