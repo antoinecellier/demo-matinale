@@ -1,29 +1,29 @@
-import React, { Component } from 'react';
-import 'antd/dist/antd.css';
-import './App.css';
-import ContractChecker from './ContractChecker';
-import BetForm from './BetForm';
-import UpcomingMatches from './UpcomingMatches';
-import EventWatcher from './EventWatcher';
-import MatchCreationForm from './MatchCreationForm';
-import Bets from './Bets';
+import React, { Component } from 'react'
+import 'antd/dist/antd.css'
+import './App.css'
+import ContractChecker from './components/ContractChecker'
+import BetForm from './components/BetForm'
+import UpcomingMatches from './components/UpcomingMatches'
+import EventWatcher from './components/EventWatcher'
+import MatchCreationForm from './components/MatchCreationForm'
+import Bets from './components/Bets'
 
 
 class App extends Component {
-  
-  
   constructor(props) {
-    super(props);
+    super(props)
     this.state = {
-      selectedMatch: null
-    };
+      selectedMatch: null,
+    }
+    this.selectedMatchUpdate = this.selectedMatchUpdate.bind(this)
   }
 
-  
-  selectedMatchUpdate(selectedMatch){
+
+  selectedMatchUpdate(selectedMatch) {
+    console.log('SELECTED MATCH', selectedMatch)
     this.setState({
-        selectedMatch: selectedMatch
-    });
+      selectedMatch,
+    })
   }
 
   render() {
@@ -31,21 +31,22 @@ class App extends Component {
       <div className="App">
         <header className="App-header">
           <h1 className="App-title">Paris sportif à travers la blockchain</h1>
-          <ContractChecker/>
+          <ContractChecker />
         </header>
         <div id="content">
-          <UpcomingMatches callback={this.selectedMatchUpdate.bind(this)}/>
+          <UpcomingMatches callback={this.selectedMatchUpdate} />
           <div className="App-intro">
-            <BetForm selectedMatch={this.state.selectedMatch}/>
-            <br /><br />
-            <MatchCreationForm/>
+            <BetForm selectedMatch={this.state.selectedMatch} />
+            <br />
+            <br />
+            <MatchCreationForm />
           </div>
-          <Bets></Bets>
+          <Bets />
         </div>
-        <EventWatcher/>
+        <EventWatcher />
       </div>
-    );
+    )
   }
 }
 
-export default App;
+export default App
