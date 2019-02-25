@@ -90,6 +90,6 @@ contract('Betting', async (accounts) => {
     expect(new BigNumber(newMainAccountBalance).lessThan(initialMainAccountBalance), "Le premier parieur a perdu son pari").to.equal(true);
     
     let newOtherAccountBalance = await web3.eth.getBalance(accounts[1]);
-    expect(new BigNumber(newOtherAccountBalance).minus(initialOtherAccountBalance).equals(6000000001), "Le deuxième joueur a gagné son pari").to.equal(true);
+    expect(new BigNumber(newOtherAccountBalance).minus(initialOtherAccountBalance).equals(6000000000), "Le deuxième joueur a gagné son pari").to.equal(true);
   })
 });
