@@ -22,7 +22,6 @@ class UpcomingMatches extends Component {
   }
 
   selectedMatchUpdate(selectedMatch) {
-    console.log(this.props, selectedMatch)
     this.props.callback(selectedMatch)
     // eslint disable-next-line
     // this.setState({

@@ -1,3 +1,4 @@
+/* eslint-disable */
 var Betting = artifacts.require("Betting");
 let BigNumber = require('bignumber.js');
 
@@ -25,25 +26,26 @@ contract('Betting', async (accounts) => {
   });
 
   it("should persist a bet when the bet function is called", async () => {
-
     let mainAccount = accounts[0];
     let betting = await Betting.deployed();
     await betting.createMatch("homeTeam", "challengerTeam", "libelle", 10, 100, {
       gas: 1000000,
       from: mainAccount
     });
+
     await betting.betOnMatch(
       true, false, 1, {
         gas: 300000,
         from: mainAccount,
         value: 500000000
       });
+      
     let bets = await betting.getUserBets(mainAccount);
+
     assert.equal(bets[0][0].toNumber(), 500000000, "Le montant du pari est incorrect");
     assert.equal(bets[1][0].toNumber(), 1, "L'id du match est incorrect");
     assert.equal(bets[2][0], true, "Le pari doit être sur la home team");
     assert.equal(bets[3][0], false, "Le pari ne doit pas être sur une égalité");
-
   });
 
   it("should finish the match and solve the bets when the resolveMatch function is called", async () => {

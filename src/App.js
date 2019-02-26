@@ -20,7 +20,6 @@ class App extends Component {
 
 
   selectedMatchUpdate(selectedMatch) {
-    console.log('SELECTED MATCH', selectedMatch)
     this.setState({
       selectedMatch,
     })

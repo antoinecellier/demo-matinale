@@ -1,5 +1,5 @@
 import Web3 from 'web3'
-
+import range from 'lodash/range'
 import { Subject } from 'rxjs'
 import betContract from '../contracts/Betting.json'
 
@@ -7,7 +7,7 @@ import betContract from '../contracts/Betting.json'
 class BetService {
   constructor() {
     this.state = {
-      bet: undefined, amount: null, matches: [], eventLogs: [],
+      bet: undefined, amount: null, matches: [], eventLogs: [], bets: []
     }
     const methods = [
       this.bet,
@@ -47,7 +47,7 @@ class BetService {
   }
 
   static getBetContractPubKey() {
-    return '0xAAdc3681cD10939bee593518708313b507687e2d'
+    return '0xddA3B5c975c2C4fb2bf03d086aD5834732eaFb17'
   }
 
   bet(matchId, betOnHomeTeamWin, betOnHomeTeamEquality, amountToBet) {
@@ -99,11 +99,37 @@ class BetService {
       })
   }
 
+  getBets() {
+    const formattedBets = []
+
+    return new Promise((resolve, reject) => {
+      this.getMatchesToBetOn().then(matches => {
+        this.state.ContractInstance.getUserBets.call(this.getCurrentEthereumAccountPubKey(), 
+          (err, bets) => {
+            range(bets[0].length).forEach((index) => {
+              const match_id = bets[1][index].toNumber()
+              const match = matches.find(({ id}) => id === bets[1][index].toNumber())
+              formattedBets.push({
+                amount: window.web3.fromWei(bets[0][index].toNumber(), 'ether'),
+                match_id,
+                externalTeam: match.externalTeam,
+                homeTeam: match.homeTeam,
+                homeVictoryBet: bets[2][index],
+                equalityBet: bets[3][index],
+              })
+            })
+            resolve(formattedBets)
+          })
+      })
+    })
+  }
+
   /* eslint-disable */
   getMatchesToBetOn() {
     return new Promise((resolve, reject) => {
       const matches = []
       let contractInst = this.state.ContractInstance
+
       this.state.ContractInstance.getMatchsLenght.call((err, matchsLenght) => {
 
         if (err) {
@@ -111,8 +137,7 @@ class BetService {
         }
 
         let matchCounter = 0;
-        console.log(matchsLenght)
-
+        
         for (let i = 0; i < matchsLenght; i++) {
           contractInst.matchs.call(i, (err, match) => {
             if (err) {
@@ -144,7 +169,6 @@ class BetService {
     this.state.eventsFilter.watch((error, result) => {
       this.eventSubject.next(BetService.printEvent(result))
     })
-    console.log(this.state.ContractInstance)
     this.state.betTreatmentFilter = this.state.ContractInstance.ResolvedBet({}, { fromBlock: 0, toBlock: 'latest' },
       (error, result) => {
         if (!error) {

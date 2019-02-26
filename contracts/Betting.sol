@@ -1,6 +1,7 @@
 pragma solidity 0.5.0;
+pragma experimental ABIEncoderV2;
 
-contract Betting {
+contract Betting{
     // héritage: contract Bet -> SoccerBet
     // mortal.sol & owned.sol -> https://github.com/Apress/introducing-ethereum-solidity
     // créer un smart contract maintenable
@@ -36,14 +37,22 @@ contract Betting {
     mapping(address => Bet[]) addressToBets;
     mapping(uint => Bet[]) betsOnMatch;
 
-
-
     constructor() public payable{
         owner = msg.sender;
     }
-
-   
  
+    // event LogBet(uint _amount, uint _match_id, string _result, string _homeTeam, string _externalTeam);
+
+    function getMatchIdsByBetter(address better)
+        public view returns(uint[] memory) {
+        uint[] memory match_ids = new uint[](addressToBets[better].length);
+        for (uint i = 0; i < addressToBets[better].length; i++) {
+            Bet storage bet = addressToBets[better][i];
+            match_ids[i] = bet.match_id;
+        }
+        return (match_ids);
+    }
+
     function getUserBets(address better) 
         public view returns(uint[] memory, uint[] memory, bool[] memory, bool[] memory) {
         uint[] memory amounts = new uint[](addressToBets[better].length);
@@ -61,7 +70,6 @@ contract Betting {
         
         return (amounts, match_ids, homeVictoryBets, equalityBets);  
     }
-
 
     function getMatchsLenght() public view returns(uint) { return matchs.length; }
 
